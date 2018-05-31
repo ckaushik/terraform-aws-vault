@@ -21,6 +21,10 @@ variable "dns_zone" {
   description = "Zone where the Consul UI alb will be created. This should *not* be consul.example.com"
 }
 
+variable "aws_cert_domain" {
+  description = "ACM cert using which the alb will be created. This should *not* be vault.example.com"
+}
+
 variable "ecs_cluster_ids" {
   type        = "list"
   description = "List of ARNs of the ECS Cluster IDs"

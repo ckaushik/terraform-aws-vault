@@ -1,5 +1,40 @@
 # Create a new load balancer
 
+data "aws_elb_service_account" "main" {}
+
+resource "aws_s3_bucket" "access_logs" {
+  bucket_prefix = "${var.alb_log_bucket}-"
+  acl    = "private"
+  tags {
+    Name        = "ALB Access logs"
+    Environment = "${var.env}"
+  }
+}
+
+resource "aws_s3_bucket_policy" "access_logs_policy" {
+  bucket = "${aws_s3_bucket.access_logs.id}"
+  policy = <<POLICY
+{
+  "Id": "Policy",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.access_logs.id}/*",
+      "Principal": {
+        "AWS": [
+          "${data.aws_elb_service_account.main.arn}"
+        ]
+      }
+    }
+  ]
+}
+POLICY
+}
+
 resource "aws_alb" "vault" {
   name_prefix     = "vault-"
   security_groups = ["${aws_security_group.lb-vault-sg.id}"]
@@ -12,7 +47,7 @@ resource "aws_alb" "vault" {
   }
 
   access_logs {
-    bucket = "${var.alb_log_bucket}"
+    bucket = "${aws_s3_bucket.access_logs.id}"
     prefix = "logs/elb/${local.vpc_name}/vault"
   }
 }

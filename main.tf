@@ -1,4 +1,3 @@
-#docker run --rm -it -e VAULT_ADDR='http://127.0.0.1:8200' --privileged --network=host vault unseal $KEY
 data "aws_availability_zones" "available" {}
 
 data "aws_vpc" "vpc" {
@@ -10,7 +9,7 @@ data "aws_route53_zone" "zone" {
 }
 
 data "aws_acm_certificate" "cert" {
-  domain = "${replace(var.dns_zone, "/.$/","")}" # dirty hack to strip off trailing dot
+  domain = "${var.aws_cert_domain}"
 }
 
 data "aws_region" "current" {}
